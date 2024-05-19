@@ -4,8 +4,8 @@
   "description": "API developed for the food project",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon ./src/server.js"
+    "dev": "nodemon ./src/server.js",
+    "migrate": "knex migrate:latest"
   },
   "author": "Warlley Lopes",
   "license": "ISC",
@@ -13,6 +13,7 @@
     "bcryptjs": "^2.4.3",
     "express": "^4.19.2",
     "express-async-errors": "^3.1.1",
+    "jsonwebtoken": "^9.0.2",
     "knex": "^3.1.0",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7"
