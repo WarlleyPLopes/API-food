@@ -51,39 +51,41 @@ class DishesController {
     let dishes
 
     if (ingredients) {
-      const filterIngredients = ingredients.split(",").map((ingredient) => ingredient.trim());
+      const filterIngredients = ingredients
+        .split(",")
+        .map((ingredient) => ingredient.trim())
 
       dishes = await knex("ingredients")
-      .select([
-        "dishes.id",
-        "dishes.title",
-        "dishes.image",
-        "dishes.price",
-        "dishes.category",
-        "dishes.description"
-      ])
-      .whereLike("dishes.title", `%${title}%`)
-      .whereIn("ingredients.title", filterIngredients)
-      .innerJoin("dishes", "dishes.id", "ingredients.dish_id")
-      .groupBy("dishes.id")
-      .orderBy("dishes.title")
-      
+        .select([
+          "dishes.id",
+          "dishes.title",
+          "dishes.image",
+          "dishes.price",
+          "dishes.category",
+          "dishes.description",
+        ])
+        .whereLike("dishes.title", `%${title}%`)
+        .whereIn("ingredients.title", filterIngredients)
+        .innerJoin("dishes", "dishes.id", "ingredients.dish_id")
+        .groupBy("dishes.id")
+        .orderBy("dishes.title")
     } else {
       dishes = await knex("dishes")
-       .whereLike("title", `%${title}%`)
-       .orderBy("title")
+        .whereLike("title", `%${title}%`)
+        .orderBy("title")
     }
 
-    const setIngredients = await knex('ingredients')
-    const dishesWithDishes = dishes.map(dish => {
-      const dishIngredients = setIngredients.filter(ingredient => ingredient.dish_id === dish.id)
+    const setIngredients = await knex("ingredients")
+    const dishesWithDishes = dishes.map((dish) => {
+      const dishIngredients = setIngredients.filter(
+        (ingredient) => ingredient.dish_id === dish.id
+      )
 
       return {
         ...dish,
-        dishIngredients
+        dishIngredients,
       }
     })
-
 
     return response.json(dishesWithDishes)
   }
