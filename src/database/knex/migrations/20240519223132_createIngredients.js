@@ -1,12 +1,8 @@
 exports.up = (knex) =>
   knex.schema.createTable("ingredients", (table) => {
     table.increments("id")
-    table.text("title")
-    table
-      .integer("dish_id")
-      .references("id")
-      .inTable("dishes")
-      .onDelete("CASCADE")
+    table.text("title").notNullable()
+    table.integer("dish_id").references("id").inTable("dishes").onDelete("CASCADE")
   })
 
 exports.down = (knex) => knex.schema.dropTable("ingredients")
