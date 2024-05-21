@@ -90,6 +90,46 @@ class DishesController {
     return response.json(dishesWithDishes)
   }
 
+  async update(request, response) {
+    const { id } = request.params
+    const { title, description, ingredients, category, price } = request.body
+
+    const dish = await knex("dishes").where({ id }).first()
+
+    if (!dish) {
+      throw new AppError("Dish nor found.")
+    }
+
+    const checkDishExists = await knex("dishes").where({ title }).first()
+
+    if (checkDishExists && checkDishExists.id !== dish.id) {
+      throw new AppError("The dish already exists")
+    }
+
+    dish.title = title ?? dish.title
+    dish.description = description ?? dish.description
+    dish.price = price ?? dish.price
+    dish.category = category ?? dish.category
+
+    await knex("dishes").update(dish).where({ id })
+
+    if (ingredients) {
+      const addIngredients = ingredients.map((ingredient) => {
+        return {
+          title: ingredient,
+          dish_id: dish.id,
+        }
+      })
+
+      await knex("ingredients").where({ dish_id: dish.id }).delete()
+      await knex("ingredients")
+        .where({ dish_id: dish.id })
+        .insert(addIngredients)
+
+      return response.status(201).json(dish)
+    }
+  }
+
   async delete(request, response) {
     const { id } = request.params
 

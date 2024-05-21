@@ -13,6 +13,7 @@ const dishesImageController = new DishesImageController()
 
 dishesRoutes.post("/", dishesController.create)
 dishesRoutes.get("/", dishesController.index)
+dishesRoutes.put("/:id", dishesController.update)
 dishesRoutes.get("/:id", dishesController.show)
 dishesRoutes.delete("/:id", dishesController.delete)
 dishesRoutes.patch(
