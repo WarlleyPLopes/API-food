@@ -3,11 +3,11 @@ const AppError = require("../utils/AppError")
 
 const UserRepository = require("../repositories/UserRepository")
 const UserCreateService = require("../services/UserCreateService")
-const sqliteConnection = require("../database/sqlite")
+const knex = require("../database/knex")
 
 class UsersController {
   async create(request, response) {
-    const {name, email, password} = request.body
+    const { name, email, password } = request.body
     const userRepository = new UserRepository()
     const userCreateService = new UserCreateService(userRepository)
     await userCreateService.execute({ name, email, password })
@@ -19,17 +19,13 @@ class UsersController {
     const { name, email, password, old_password } = request.body
     const user_id = request.user.id
 
-    const database = await sqliteConnection()
-    const user = await database.get("SELECT * FROM users WHERE id = (?)", [user_id])
+    const user = await knex("users").where({ id: user_id }).first()
 
     if (!user) {
       throw new AppError("User not found.")
     }
 
-    const userWithUpdatedEmail = await database.get(
-      "SELECT * FROM users WHERE email = (?)",
-      [email]
-    )
+    const userWithUpdatedEmail = await knex("users").where({ email }).first()
 
     if (userWithUpdatedEmail && userWithUpdatedEmail.id !== user.id) {
       throw new AppError("This email is already in use.")
@@ -54,16 +50,15 @@ class UsersController {
       user.password = await hash(password, 8)
     }
 
-    await database.run(
-      `
-      UPDATE users SET
-      name = ?,
-      email = ?,
-      password = ?,
-      updated_at = DATETIME('now')
-      WHERE id = ?`,
-      [user.name, user.email, user.password, user_id]
-    )
+    await knex("users")
+      .update({
+        name: user.name,
+        email: user.email,
+        password: user.password,
+        updated_at: knex.fn.now(),
+      })
+      .where({ id: user_id })
+
     return response.json()
   }
 }

@@ -20,7 +20,7 @@ class DishesImageController {
 
     await knex("dishes").update(dish).where({ id })
 
-    return response.json(dish)
+    return response.json()
   }
 }
 
