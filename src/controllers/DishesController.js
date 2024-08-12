@@ -1,17 +1,25 @@
 const knex = require("../database/knex")
 const AppError = require("../utils/AppError")
+const DiskStorage = require("../providers/DiskStorage")
 
 class DishesController {
   async create(request, response) {
     const { title, description, ingredients, category, price } = request.body
 
+    const diskStorage = new DiskStorage()
+
     const checkDishExists = await knex("dishes").where({ title }).first()
+
+    const imageFileName = request.file.filename
+
+    const filename = await diskStorage.saveFile(imageFileName)
 
     if (checkDishExists) {
       throw new AppError("Existing dish")
     }
 
     const [dish_id] = await knex("dishes").insert({
+      image: filename,
       title,
       description,
       price,
@@ -31,13 +39,22 @@ class DishesController {
   }
 
   async update(request, response) {
-    const { title, description, ingredients, category, price } = request.body
+    const { title, description, ingredients, category, price, image } =
+      request.body
     const { id } = request.params
+
+    const diskStorage = new DiskStorage()
+
+    const imageFileName = request.file.filename
 
     const dish = await knex("dishes").where({ id }).first()
 
     if (!dish) {
       throw new AppError("Dish nor found.")
+    }
+
+    if (dish.image) {
+      await diskStorage.deleteFile(dish.image)
     }
 
     const checkDishExists = await knex("dishes").where({ title }).first()
@@ -46,6 +63,9 @@ class DishesController {
       throw new AppError("The dish already exists")
     }
 
+    const filename = await diskStorage.saveFile(imageFileName)
+
+    dish.image = image ?? filename
     dish.title = title ?? dish.title
     dish.description = description ?? dish.description
     dish.price = price ?? dish.price
