@@ -7,11 +7,8 @@ class DishesController {
     const { title, description, ingredients, category, price } = request.body
 
     const diskStorage = new DiskStorage()
-
     const checkDishExists = await knex("dishes").where({ title }).first()
-
     const imageFileName = request.file.filename
-
     const filename = await diskStorage.saveFile(imageFileName)
 
     if (checkDishExists) {
@@ -26,12 +23,22 @@ class DishesController {
       category,
     })
 
-    const ingredientsInsert = ingredients.map((title) => {
-      return {
+    const hasOnlyOneIngredient = typeof ingredients === "string"
+    let ingredientsInsert
+
+    if (hasOnlyOneIngredient) {
+      ingredientsInsert = {
+        title: ingredients,
         dish_id,
-        title,
       }
-    })
+    } else if (ingredients.length > 1) {
+      ingredientsInsert = ingredients.map((name) => {
+        return {
+          name,
+          dish_id,
+        }
+      })
+    }
 
     await knex("ingredients").insert(ingredientsInsert)
 
@@ -43,18 +50,10 @@ class DishesController {
       request.body
     const { id } = request.params
 
-    const diskStorage = new DiskStorage()
-
-    const imageFileName = request.file.filename
-
     const dish = await knex("dishes").where({ id }).first()
 
     if (!dish) {
       throw new AppError("Dish nor found.")
-    }
-
-    if (dish.image) {
-      await diskStorage.deleteFile(dish.image)
     }
 
     const checkDishExists = await knex("dishes").where({ title }).first()
@@ -63,9 +62,6 @@ class DishesController {
       throw new AppError("The dish already exists")
     }
 
-    const filename = await diskStorage.saveFile(imageFileName)
-
-    dish.image = image ?? filename
     dish.title = title ?? dish.title
     dish.description = description ?? dish.description
     dish.price = price ?? dish.price
@@ -85,9 +81,8 @@ class DishesController {
       await knex("ingredients")
         .where({ dish_id: dish.id })
         .insert(addIngredients)
-
-      return response.status(201).json()
     }
+    return response.status(201).json()
   }
 
   async show(request, response) {
