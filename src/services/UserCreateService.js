@@ -13,6 +13,10 @@ class UserCreateService {
       throw new AppError("This email is already in use!")
     }
 
+    if (password.length < 6) {
+      throw new AppError("Password must have at least 6 characters!")
+    }
+
     const hashedPassword = await hash(password, 8)
 
     const userCreated = await this.userRepository.create({
