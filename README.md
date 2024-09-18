@@ -41,7 +41,7 @@ $ git clone git@github.com:WarlleyPLopes/API-food.git
 ```
 #### Navegue até o diretório do BackEnd
 ```
-$ cd food-explorer-backend
+$ cd API-food
 ```
 #### Instale as dependências necessárias
 ```
